@@ -1,4 +1,6 @@
-#include "pi_server.c"
+#include "pi_server.h"
+
+int PORT = 7777;
 
 int main(int argc, char *argv[]){
 

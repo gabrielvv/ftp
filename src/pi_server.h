@@ -1,7 +1,9 @@
 #ifdef WIN32 // if windows
+
 #include <winsock2.h>
 
 #else // if not supported
+
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -37,13 +39,12 @@ typedef struct in_addr IN_ADDR;
 
 #endif
 
-static int PORT =7777;
-static int MAX_CLIENT = 10;
+#define MAX_CLIENT 10
 
-static void init(void);
-static void end(void);
+void init(void);
+void end(void);
 int init_server_connection(int port, int nb_client);
-static int read_client(SOCKET sock, char *buffer);
+int read_client(SOCKET sock, char *buffer);
 void write_client(int socket_fd, char * message);
 int parse_cmd(char* buffer, char * arg);
 void cmd_pwd(SOCKET sock,char *arg);

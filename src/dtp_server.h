@@ -37,13 +37,15 @@ typedef struct in_addr IN_ADDR;
 
 #endif
 
-static int PORT =7777;
-static int MAX_CLIENT = 10;
+// variable/fonction statique => invisible à l'extérieur du fichier où elle est déclarée
 
-static void init(void);
-static void end(void);
+int PORT =7777;
+int MAX_CLIENT = 10;
+
+void init(void);
+void end(void);
 int init_server_connection(int port, int nb_client);
-static int read_client(SOCKET sock, char *buffer);
+int read_client(SOCKET sock, char *buffer);
 void write_client(int socket_fd, char * message);
 int parse_cmd(char* buffer, char * arg);
 void cmd_pwd(SOCKET sock,char *arg);
