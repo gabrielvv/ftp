@@ -1,4 +1,4 @@
-#include "server.h"
+#include "pi_server.h"
 
 static void init(void)
 {

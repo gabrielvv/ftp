@@ -1,5 +1,5 @@
 #include <criterion/criterion.h>
-#include "server.h"
+#include "pi_server.h"
 #include <string.h>
 
 Test(server, test){

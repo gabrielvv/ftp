@@ -1,5 +1,4 @@
-#include "client.h"
-
+#include "pi_client.h"
 
 void init(void)
 {

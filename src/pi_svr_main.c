@@ -1,4 +1,4 @@
-#include "server.c"
+#include "pi_server.c"
 
 int main(int argc, char *argv[]){
 
