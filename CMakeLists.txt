@@ -4,7 +4,9 @@
 
 cmake_minimum_required (VERSION 2.8.9)
 
-project (Ftp C)
+#set(CMAKE_BUILD_TYPE Release)
+
+project (ftp C)
 
 # Add ./cmake to the module path
 list (APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
@@ -17,6 +19,8 @@ include_directories ("${CMAKE_CURRENT_SOURCE_DIR}/src")
 
 # Add sources
 add_subdirectory (src)
+add_subdirectory (doc)
+add_subdirectory (examples)
 
 if (ENABLE_TESTS)
 	# Check for criterion
