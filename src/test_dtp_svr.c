@@ -1,6 +1,6 @@
 #include "dtp_server.h"
 
-int PORT = 7777;
+int PORT = 20;
 
 int main(int argc, char *argv[]){
 

@@ -25,11 +25,10 @@ typedef struct sockaddr SOCKADDR;
 typedef struct in_addr IN_ADDR;
 #endif
 
-#define PORT	 7777
 #define BUF_SIZE 1024
 
 void init(void);
-int init_client_connection(const char *address);
+int init_client_connection(const char *address, int port);
 
 int read_server(SOCKET sock, void* buffer);
 void write_server(SOCKET sock, const void* buffer);

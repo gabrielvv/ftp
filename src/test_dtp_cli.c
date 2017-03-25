@@ -10,7 +10,7 @@ int main(int argc, char **argv)
 
    printf("ftp> ");
 
-   SOCKET sock = init_client_connection(argv[1]);
+   SOCKET sock = init_client_connection(argv[1], 20);
    char buffer[BUF_SIZE];
    fd_set rdfs;
 

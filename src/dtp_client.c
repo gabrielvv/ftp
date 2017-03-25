@@ -28,7 +28,7 @@ static void end(void)
  * @param  address {int}     address
  * @return {int} return new socket (file descriptor)
  */
-int init_client_connection(const char *address)
+int init_client_connection(const char *address, int port)
 {
    // create a new socket
    SOCKET sock = socket(AF_INET, SOCK_STREAM, 0);
@@ -49,7 +49,7 @@ int init_client_connection(const char *address)
    }
 
    sin.sin_addr = *(IN_ADDR *) hostinfo->h_addr;
-   sin.sin_port = htons(PORT);
+   sin.sin_port = htons(port);
    sin.sin_family = AF_INET;
 
    // try connect client to server with struct sin
