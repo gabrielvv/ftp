@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include "dtp_client.h"
 
 void init(void)
@@ -66,7 +67,7 @@ int init_client_connection(const char *address)
 * @param  buffer  {char*}  buffer for msg
 * @return {int} return Buffer size
 */
-int read_server(SOCKET sock, char *buffer)
+int read_server(SOCKET sock, void *buffer)
 {
    int n = 0;
 
@@ -76,7 +77,7 @@ int read_server(SOCKET sock, char *buffer)
       exit(errno);
    }
 
-   buffer[n] = 0;
+   // buffer[n] = 0;
 
    return n;
 }
@@ -87,11 +88,61 @@ int read_server(SOCKET sock, char *buffer)
 * @param  sock  {SOCKET}  socket  to write
 * @param  message  {char*}  Message to send
 */
-void write_server(SOCKET sock, const char *buffer)
+void write_server(SOCKET sock, const void *buffer)
 {
    if(send(sock, buffer, strlen(buffer), 0) < 0)
    {
       perror("send()");
       exit(errno);
    }
+}
+
+//FILE *fopen(const char *path, const char *mode);
+void fsupload(SOCKET to_sock, FILE* file){
+   //fread
+}
+
+void fupload(SOCKET to_sock, const char* path){
+   //fread
+}  
+
+/**
+* w flag
+* Truncate file to zero length or create text  file  for  writing.
+* The stream is positioned at the beginning of the file.
+*
+* @desc download data as file and store to path
+*
+* @param to_sock {SOCKET}
+* @param path    {char*}
+*
+* @see readv
+* @see fopen
+* @see recvmmsg
+* @see recv
+* @see select/pselect/poll/ppoll
+* @see memset
+*/
+void fdownload(SOCKET to_sock, const char* path){
+   
+   printf("client download start\n");
+   fflush(stdout);
+
+   FILE* fp = fopen(path, "w");
+   char buffer[BUF_SIZE];
+
+   while(1){
+      int n = read_server(to_sock, buffer);
+
+      // ecriture non formatée binaire
+      // cf. remarques et limitations dans cours
+      fwrite(buffer, sizeof(char), n, fp);
+
+      // feof returns non-zero if the end-of-file indicator is set
+      if(feof(fp) != 0)
+         break;
+   }
+
+   printf("end of client download\n");
+   fflush(stdout);
 }

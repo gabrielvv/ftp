@@ -163,6 +163,48 @@ int parse_cmd(char* buffer, char * arg)
   return cmd;
 }
 
+//FILE *fopen(const char *path, const char *mode);
+void fsupload(SOCKET to_sock, FILE* file){
+   //fread
+}
+
+void fupload(SOCKET to_sock, const char* path){
+  printf("server upload start\n");
+  fflush(stdout);
+
+  FILE* fp = fopen(path, "r");
+  char buffer[BUF_SIZE];
+  memset(buffer, 0, BUF_SIZE);
+
+  while(feof(fp) == 0){
+    fread(buffer, sizeof(char), BUF_SIZE, fp);
+    write_client(to_sock, buffer);
+  }
+  printf("end of server upload\n");
+  fflush(stdout);
+}  
+
+/**
+* w flag
+* Truncate file to zero length or create text  file  for  writing.
+* The stream is positioned at the beginning of the file.
+*
+* @desc download data as file and store to path
+*
+* @param to_sock {SOCKET}
+* @param path    {char*}
+*
+* @see readv
+* @see fopen
+* @see recvmmsg
+* @see recv
+* @see select/pselect/poll/ppoll
+* @see memset
+*/
+void fdownload(SOCKET to_sock, const char* path){
+   //code
+}
+
 
 /*
    ____ ___  __  __ __  __    _    _   _ ____

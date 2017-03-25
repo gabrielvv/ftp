@@ -30,7 +30,12 @@ typedef struct in_addr IN_ADDR;
 
 void init(void);
 int init_client_connection(const char *address);
-int read_server(SOCKET sock, char *buffer);
-void write_server(SOCKET sock, const char *buffer);
+
+int read_server(SOCKET sock, void* buffer);
+void write_server(SOCKET sock, const void* buffer);
+
+void fupload(SOCKET, const char*);
+void fsupload(SOCKET, FILE*);
+void fdownload(SOCKET, const char*);
 
 #endif

@@ -39,8 +39,7 @@ typedef struct in_addr IN_ADDR;
 
 // variable/fonction statique => invisible à l'extérieur du fichier où elle est déclarée
 
-int PORT =7777;
-int MAX_CLIENT = 10;
+#define MAX_CLIENT 10
 
 void init(void);
 void end(void);
@@ -54,6 +53,9 @@ void cmd_rmd(SOCKET sock, char *arg);
 void cmd_dele(SOCKET sock, char *arg);
 void cmd_cwd(SOCKET sock, char *arg);
 
+void fupload(SOCKET, const char*);
+void fsupload(SOCKET, FILE*);
+void fdownload(SOCKET, const char*);
 
 typedef struct
 {
