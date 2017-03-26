@@ -73,6 +73,27 @@ int main(int argc, char *argv[]){
            {
               Client client = clients[i];
               int c = read_client(clients[i].sock, buffer);
+              printf("n : %s\n",buffer);
+              /*switch(*buffer){
+                case "PWD" :
+                          printf("PWD print directory \n");
+                          break;
+                case "CDUP" :
+                          printf("CDUP Change to Parent Directory \n");
+                          break;
+                case "SMNT" :
+                          printf("SMNT Structure Mount \n");
+                          break;
+                case "STOU" :
+                          printf("STOU Store Unique \n");
+                          break;
+                case "MKD" :
+                          printf("MKD Make Directory \n");
+                          break;
+                case "SYST" :
+                          printf("syst Make Directory \n");
+                          break;
+              }*/
            }
         }
     }

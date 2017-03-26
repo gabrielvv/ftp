@@ -30,6 +30,8 @@ static void init(void);
 static void end(void);
 int init_server_connection(int port, int nb_client);
 static int read_client(SOCKET sock, char *buffer);
+void write_client(int socket_fd, char * message);
+void parse_cmd(char* buffer, char * arg);
 
 typedef struct
 {

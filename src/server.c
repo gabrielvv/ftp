@@ -61,7 +61,7 @@ int init_server_connection(int port, int nb_client){
 
 static int read_client(SOCKET sock, char *buffer)
 {
-  printf("on passe dans le red client\n");
+   //printf("on passe dans le red client\n");
    int n = 0;
    if((n = recv(sock, buffer, BUF_SIZE - 1, 0)) < 0)
    {
@@ -69,6 +69,46 @@ static int read_client(SOCKET sock, char *buffer)
       n = 0;
    }
    buffer[n] = 0;
-   printf("n : %s\n",buffer);
+   //printf("n : %s\n",buffer);
    return n;
+}
+
+void write_client(int socket_fd, char * message) {
+    int length = strlen(message);
+
+    if(write(socket_fd, message, length) != length) {
+        perror("Error writing message");
+        close(socket_fd);
+}
+
+
+void parse_cmd(char* buffer, char * arg)
+{
+  int cmd = 0;
+  if(strncmp(buffer, "pwd", 3) == 0){
+    buffer = buffer+3;
+    cmd = 1;
+  }
+  if(strncmp(buffer, "cdup", 4) == 0){
+    buffer = buffer+4;
+    cmd = 2;
+  }
+  if(strncmp(buffer, "smnt", 4) == 0){
+    buffer = buffer+4;
+    cmd = 3;
+  }
+  if(strncmp(buffer, "stou", 4) == 0){
+    buffer = buffer+4;
+    cmd = 4;
+  }
+  if(strncmp(buffer, "mkd ", 3) == 0){
+    buffer = buffer+3;
+    cmd = 5;
+  }
+  if(strncmp(buffer, "syst", 4) == 0){
+    buffer = buffer+4;
+    cmd = 5;
+  }
+
+
 }
