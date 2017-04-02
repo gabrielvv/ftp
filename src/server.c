@@ -79,6 +79,7 @@ void write_client(int socket_fd, char * message) {
     if(write(socket_fd, message, length) != length) {
         perror("Error writing message");
         close(socket_fd);
+    }
 }
 
 
@@ -110,5 +111,8 @@ void parse_cmd(char* buffer, char * arg)
     cmd = 5;
   }
 
-
+  switch(cmd){
+  	case 0:;
+	default:;
+  }
 }
