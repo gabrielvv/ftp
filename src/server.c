@@ -26,10 +26,7 @@ static void end(void)
  * @param  nb_client {int} Number of clients
  * @return {int} return new socket (file descriptor)
  */
-
-
 int init_server_connection(int port, int nb_client){
-
   // create a new socket
   SOCKET sock = socket(AF_INET, SOCK_STREAM, 0);
   SOCKADDR_IN sin = { 0 };
@@ -59,6 +56,12 @@ int init_server_connection(int port, int nb_client){
    return sock;
 }
 
+/*
+* read msg from client
+* @param  sock  {SOCKET}  socket  to listen
+* @param  buffer  {char*}  buffer for msg
+* @return {int} return Buffer size
+*/
 static int read_client(SOCKET sock, char *buffer)
 {
    //printf("on passe dans le red client\n");
@@ -73,46 +76,74 @@ static int read_client(SOCKET sock, char *buffer)
    return n;
 }
 
+/**
+* allow to send msg on client
+* @param  sock  {SOCKET}  socket  to write
+* @param  message  {char*}  Message to send
+*/
 void write_client(int socket_fd, char * message) {
     int length = strlen(message);
 
     if(write(socket_fd, message, length) != length) {
         perror("Error writing message");
         close(socket_fd);
-    }
+      }
 }
 
-
-void parse_cmd(char* buffer, char * arg)
+/**
+ * parse cmd send by client
+ * @param buffer [description]
+ * @param arg    [description]
+ */
+int parse_cmd(char* buffer, char * arg)
 {
-  int cmd = 0;
+
+  while(*buffer == ' ' || *buffer == '\t') {
+      buffer++;
+  }
+
+  int cmd = INVALID;
   if(strncmp(buffer, "pwd", 3) == 0){
-    buffer = buffer+3;
-    cmd = 1;
+    buffer = buffer + 3;
+    cmd = PWD;
   }
   if(strncmp(buffer, "cdup", 4) == 0){
-    buffer = buffer+4;
-    cmd = 2;
+    buffer = buffer + 4;
+    cmd = CDUP;
   }
   if(strncmp(buffer, "smnt", 4) == 0){
-    buffer = buffer+4;
-    cmd = 3;
+    buffer = buffer + 4;
+    cmd = SMNT;
   }
   if(strncmp(buffer, "stou", 4) == 0){
-    buffer = buffer+4;
-    cmd = 4;
+    buffer = buffer + 4;
+    cmd = STOU;
   }
-  if(strncmp(buffer, "mkd ", 3) == 0){
-    buffer = buffer+3;
-    cmd = 5;
+  if(strncmp(buffer, "mkd", 3) == 0){
+    buffer = buffer + 3;
+    cmd = MKD;
   }
   if(strncmp(buffer, "syst", 4) == 0){
-    buffer = buffer+4;
-    cmd = 5;
+    buffer = buffer + 4;
+    cmd = SYST;
   }
 
-  switch(cmd){
-  	case 0:;
-	default:;
+  if(arg != NULL){
+
+    while(*buffer == ' ' || *buffer == '\t') {
+        buffer++;
+    }
+
+    //Copy the argument over:
+    while((*buffer != ' ') && (*buffer != '\n') && (*buffer != '\r') && (*buffer != '\0')) {
+        *arg = *buffer;
+        arg++;
+        buffer++;
+    }
+    printf("argument : %s\n",arg);
+
+    //Null-terminate:
+    *arg = '\0';
   }
+  return cmd;
 }
