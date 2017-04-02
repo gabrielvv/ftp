@@ -16,7 +16,7 @@ int main(int argc, char *argv[]){
     int ret = 0;
     FD_ZERO(&rdfs);
     FD_SET(sockServer, &rdfs);
-    printf("on boucle" );
+    //printf("on boucle\n" );
 
     FD_SET(sockServer, &rdfs);
     /* add socket of each client */
@@ -58,12 +58,12 @@ int main(int argc, char *argv[]){
       strncpy(c.name, buffer, BUF_SIZE - 1);
       clients[cpt_client] = c;
       cpt_client++;
-      printf("on ajout le 1er client");
+      //printf("on ajout le 1er client\n");
       fflush(stdout);
       continue;
     //after connection treat actions
     }else{
-      printf("traitement ...\n");
+      printf("traitement en cours...\n");
       fflush(stdout);
       int i = 0;
         for(i = 0; i < cpt_client; i++)
@@ -74,31 +74,33 @@ int main(int argc, char *argv[]){
               Client client = clients[i];
               int c = read_client(clients[i].sock, buffer);
               printf("n : %s\n",buffer);
-              /*switch(*buffer){
-                case "PWD" :
+              char arg[BUF_SIZE];
+              switch(parse_cmd(buffer,arg)){
+                case PWD :
                           printf("PWD print directory \n");
                           break;
-                case "CDUP" :
+                case CDUP :
                           printf("CDUP Change to Parent Directory \n");
                           break;
-                case "SMNT" :
+                case SMNT :
                           printf("SMNT Structure Mount \n");
                           break;
-                case "STOU" :
+                case STOU :
                           printf("STOU Store Unique \n");
                           break;
-                case "MKD" :
+                case MKD :
                           printf("MKD Make Directory \n");
                           break;
-                case "SYST" :
+                case SYST :
                           printf("syst Make Directory \n");
                           break;
-              }*/
+                case INVALID :
+                          printf("Invalid cmd \n");
+                          break;
+              }
            }
         }
     }
-    printf("traitement ...\n");
-    fflush(stdout);
   };
   return 0;
 
