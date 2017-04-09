@@ -42,6 +42,7 @@ int init_server_connection(int port, int nb_client);
 static int read_client(SOCKET sock, char *buffer);
 void write_client(int socket_fd, char * message);
 int parse_cmd(char* buffer, char * arg);
+void cmd_pwd(SOCKET sock,char *arg);
 
 typedef struct
 {

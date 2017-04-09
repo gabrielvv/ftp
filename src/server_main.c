@@ -61,6 +61,7 @@ int main(int argc, char *argv[]){
       //printf("on ajout le 1er client\n");
       fflush(stdout);
       continue;
+
     //after connection treat actions
     }else{
       printf("traitement en cours...\n");
@@ -78,6 +79,7 @@ int main(int argc, char *argv[]){
               switch(parse_cmd(buffer,arg)){
                 case PWD :
                           printf("PWD print directory \n");
+                          cmd_pwd(clients[i].sock, arg);
                           break;
                 case CDUP :
                           printf("CDUP Change to Parent Directory \n");

@@ -147,3 +147,29 @@ int parse_cmd(char* buffer, char * arg)
   }
   return cmd;
 }
+
+
+/*
+   ____ ___  __  __ __  __    _    _   _ ____
+  / ___/ _ \|  \/  |  \/  |  / \  | \ | |  _ \
+ | |  | | | | |\/| | |\/| | / _ \ |  \| | | | |
+ | |__| |_| | |  | | |  | |/ ___ \| |\  | |_| |
+  \____\___/|_|  |_|_|  |_/_/   \_\_| \_|____/
+
+*/
+
+void cmd_pwd(SOCKET sock,char *arg){
+    printf("arg : %s\n",arg);
+    char cwd[1024];
+    char msg_return[1024] = "Current working dir : ";
+    if(getcwd(cwd, sizeof(cwd)) != NULL){
+      strcat(msg_return, cwd);
+      printf("%s\n",msg_return);
+      write_client(sock, msg_return);
+    }
+    else{
+       perror("getcwd() error");
+       write_client(sock, "getcwd() error");
+    }
+
+}
