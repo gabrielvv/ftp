@@ -1,7 +1,18 @@
 #include "server.c"
 
 int main(int argc, char *argv[]){
-  printf("Init server\n");
+
+  printf("\n");
+  printf("\n");
+  printf("___  _____  ___     ___  ___  ___ __   __ ___  ___\n");
+  printf("| __||_   _|| _ \\  \\ / __|| __|| _ \\\\ \\ / /| __|| _ \\\n");
+  printf("| _|   | |  |  _/   \\__ \\| _| |   / \\ V / | _| |   /\n");
+  printf("|_|    |_|  |_|     |___/|___||_|_\\  \\_/  |___||_|_\\\n");
+  printf("\n");
+  printf("\n");
+  printf("--help To see the different available commands\n");
+
+  //printf("Init server\n");
   init(); //init socket for window;
   Client clients[MAX_CLIENT];
   int cpt_client = 0;
@@ -33,7 +44,7 @@ int main(int argc, char *argv[]){
 
     // new client
     if(FD_ISSET(sockServer, &rdfs)){
-      printf("new Client\n");
+      printf("Welcome new user is online\n");
       fflush(stdout);
       SOCKADDR_IN csin = { 0 };
       int new_sock = accept(sockServer, NULL,NULL);
@@ -49,7 +60,6 @@ int main(int argc, char *argv[]){
           /* disconnected */
           continue;
       }
-      printf("on recoit le 1er msg\n");
       /* wnew maximum fd ? */
       max = new_sock > max ? new_sock : max;
 
@@ -64,7 +74,7 @@ int main(int argc, char *argv[]){
 
     //after connection treat actions
     }else{
-      printf("traitement en cours...\n");
+      //printf("traitement en cours...\n");
       fflush(stdout);
       int i = 0;
         for(i = 0; i < cpt_client; i++)
@@ -74,30 +84,39 @@ int main(int argc, char *argv[]){
            {
               Client client = clients[i];
               int c = read_client(clients[i].sock, buffer);
-              printf("n : %s\n",buffer);
+              //printf("n : %s\n",buffer);
               char arg[BUF_SIZE];
               switch(parse_cmd(buffer,arg)){
                 case PWD :
-                          printf("PWD print directory \n");
+                          printf("PWD print directory %s\n", arg);
                           cmd_pwd(clients[i].sock, arg);
                           break;
                 case CDUP :
-                          printf("CDUP Change to Parent Directory \n");
+                          printf("CDUP Change to Parent Directory %s \n",arg);
                           break;
                 case SMNT :
-                          printf("SMNT Structure Mount \n");
+                          printf("SMNT Structure Mount %s\n",arg);
                           break;
                 case STOU :
-                          printf("STOU Store Unique \n");
+                          printf("STOU Store Unique %s\n", arg);
                           break;
                 case MKD :
-                          printf("MKD Make Directory \n");
+                          printf("MKD Make Directory %s\n",arg);
+                          cmd_mkdir(clients[i].sock, arg);
+                          break;
+                case RMD :
+                          printf("RMD Delete Directory %s\n", arg);
+                          cmd_rmd(clients[i].sock, arg);
                           break;
                 case SYST :
-                          printf("syst Make Directory \n");
+                          printf("SYST Make Directory %s\n", arg);
+                          break;
+                case DELE :
+                          printf("DELE DELETE FILE %s\n",arg);
+                          cmd_dele(clients[i].sock, arg);
                           break;
                 case INVALID :
-                          printf("Invalid cmd \n");
+                          printf("Invalid cmd %s\n",arg);
                           break;
               }
            }

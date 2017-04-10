@@ -119,13 +119,24 @@ int parse_cmd(char* buffer, char * arg)
     buffer = buffer + 4;
     cmd = STOU;
   }
+
   if(strncmp(buffer, "mkd", 3) == 0){
     buffer = buffer + 3;
     cmd = MKD;
   }
+  if(strncmp(buffer, "rmd", 3) ==0){
+    buffer = buffer + 3;
+    cmd = RMD;
+  }
+
   if(strncmp(buffer, "syst", 4) == 0){
     buffer = buffer + 4;
     cmd = SYST;
+  }
+
+  if(strncmp(buffer, "dele",4)==0){
+    buffer = buffer +4;
+    cmd = DELE;
   }
 
   if(arg != NULL){
@@ -140,8 +151,6 @@ int parse_cmd(char* buffer, char * arg)
         arg++;
         buffer++;
     }
-    printf("argument : %s\n",arg);
-
     //Null-terminate:
     *arg = '\0';
   }
@@ -155,11 +164,13 @@ int parse_cmd(char* buffer, char * arg)
  | |  | | | | |\/| | |\/| | / _ \ |  \| | | | |
  | |__| |_| | |  | | |  | |/ ___ \| |\  | |_| |
   \____\___/|_|  |_|_|  |_/_/   \_\_| \_|____/
-
 */
 
+/** get current directory path
+* @param sock socket client to write
+* @param arg  argument
+*/
 void cmd_pwd(SOCKET sock,char *arg){
-    printf("arg : %s\n",arg);
     char cwd[1024];
     char msg_return[1024] = "Current working dir : ";
     if(getcwd(cwd, sizeof(cwd)) != NULL){
@@ -172,4 +183,44 @@ void cmd_pwd(SOCKET sock,char *arg){
        write_client(sock, "getcwd() error");
     }
 
+}
+
+/**
+ * create a new directory
+ * @param sock socket client to write
+ * @param arg  argument file path
+ */
+void cmd_mkdir(SOCKET sock, char *arg){
+  if(arg == NULL){
+    perror("mkdir() error");
+  }else{
+      mkdir(arg, 0777);
+      write_client(sock, "created");
+  }
+}
+
+/**
+ * remove a directory
+ * @param sock socket client to write
+ * @param arg  argument directory path to delete
+ */
+void cmd_rmd(SOCKET sock, char *arg){
+  if(rmdir(arg)==0){
+     write_client(sock, "250 : OK, directory deleted \n");
+   }else{
+     write_client(sock, "550 Cannot delete directory.\n");
+   }
+}
+
+/**
+ * remove a file
+ * @param sock socket client to write
+ * @param arg  argument file path to delete
+ */
+void cmd_dele(SOCKET sock, char *arg){
+  if(remove(arg)==0){
+      write_client(sock, "250 : OK, file deleted \n");
+   }else{
+      write_client(sock, "550 Cannot delete file.\n");
+   }
 }

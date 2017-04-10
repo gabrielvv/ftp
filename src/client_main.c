@@ -8,6 +8,17 @@ int main(int argc, char **argv)
       return -1;
    }
 
+   printf("\n\n");
+   printf("___  _____  ___    ___  _     ___  ___  _  _  _____ \n");
+   printf("| __||_   _|| _ \\  / __|| |   |_ _|| __|| \\| ||_   _|\n");
+   printf("| _|   | |  |  _/ | (__ | |__  | | | _| | .` |  | | \n");
+   printf("|_|    |_|  |_|    \\___||____||___||___||_|\\_|  |_|  \n");
+   printf("\n\n");
+
+   printf("Welcome to Ftp client\n");
+   printf("Enter --help  To see the different available commands\n");
+
+
    SOCKET sock = init_client_connection(argv[1]);
    char buffer[BUF_SIZE];
    fd_set rdfs;

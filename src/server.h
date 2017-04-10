@@ -12,6 +12,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
+#include <sys/stat.h>
 #define INVALID_SOCKET -1
 #define SOCKET_ERROR -1
 #define BUF_SIZE 1024
@@ -24,7 +25,9 @@
 #define SMNT 2
 #define STOU 3
 #define MKD 4
-#define SYST 5
+#define RMD 5
+#define SYST 6
+#define DELE 7
 
 typedef int SOCKET;
 typedef struct sockaddr_in SOCKADDR_IN;
@@ -43,6 +46,10 @@ static int read_client(SOCKET sock, char *buffer);
 void write_client(int socket_fd, char * message);
 int parse_cmd(char* buffer, char * arg);
 void cmd_pwd(SOCKET sock,char *arg);
+void cmd_mkdir(SOCKET sock, char *arg);
+void cmd_rmd(SOCKET sock, char *arg);
+void cmd_dele(SOCKET sock, char *arg);
+
 
 typedef struct
 {
