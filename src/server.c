@@ -135,8 +135,13 @@ int parse_cmd(char* buffer, char * arg)
   }
 
   if(strncmp(buffer, "dele",4)==0){
-    buffer = buffer +4;
+    buffer = buffer + 4;
     cmd = DELE;
+  }
+
+  if(strncmp(buffer, "cwd", 3)==0){
+    buffer = buffer + 3;
+    cmd = CWD;
   }
 
   if(arg != NULL){
@@ -223,4 +228,17 @@ void cmd_dele(SOCKET sock, char *arg){
    }else{
       write_client(sock, "550 Cannot delete file.\n");
    }
+}
+
+/**
+ * change current diretory
+ * @param sock socket client to write
+ * @param arg    argument Directory path
+ */
+void cmd_cwd(SOCKET sock, char *arg){
+  if(chdir(arg)==0){
+      write_client(sock, "250 : OK, Directory changed \n");
+    }else{
+      write_client(sock, "250 : Failed to change directory \n");
+    }
 }

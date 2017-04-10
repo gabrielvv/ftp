@@ -115,6 +115,10 @@ int main(int argc, char *argv[]){
                           printf("DELE DELETE FILE %s\n",arg);
                           cmd_dele(clients[i].sock, arg);
                           break;
+                case CWD :
+                          printf("CWD change directory %s\n",arg);
+                          cmd_cwd(clients[i].sock, arg);
+                          break;
                 case INVALID :
                           printf("Invalid cmd %s\n",arg);
                           break;

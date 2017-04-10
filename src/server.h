@@ -28,6 +28,7 @@
 #define RMD 5
 #define SYST 6
 #define DELE 7
+#define CWD 8
 
 typedef int SOCKET;
 typedef struct sockaddr_in SOCKADDR_IN;
@@ -49,6 +50,7 @@ void cmd_pwd(SOCKET sock,char *arg);
 void cmd_mkdir(SOCKET sock, char *arg);
 void cmd_rmd(SOCKET sock, char *arg);
 void cmd_dele(SOCKET sock, char *arg);
+void cmd_cwd(SOCKET sock, char *arg);
 
 
 typedef struct
