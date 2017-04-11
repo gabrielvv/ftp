@@ -1,4 +1,6 @@
-#include "server.c"
+#include "server.h"
+
+int PORT = 7777;
 
 int main(int argc, char *argv[]){
 

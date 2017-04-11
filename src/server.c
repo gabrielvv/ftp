@@ -1,6 +1,6 @@
 #include "server.h"
 
-static void init(void)
+void init(void)
 {
 #ifdef WIN32
     WSADATA wsa;
@@ -13,7 +13,7 @@ static void init(void)
 #endif
 }
 
-static void end(void)
+void end(void)
 {
 #ifdef WIN32
     WSACleanup();
@@ -62,7 +62,7 @@ int init_server_connection(int port, int nb_client){
 * @param  buffer  {char*}  buffer for msg
 * @return {int} return Buffer size
 */
-static int read_client(SOCKET sock, char *buffer)
+int read_client(SOCKET sock, char *buffer)
 {
    //printf("on passe dans le red client\n");
    int n = 0;
