@@ -18,10 +18,4 @@ void fupload(SOCKET, const char*);
 void fsupload(SOCKET, FILE*);
 void fdownload(SOCKET, const char*);
 
-typedef struct
-{
-   SOCKET sock;
-   char name[BUF_SIZE];
-}Client;
-
 #endif /* DTP_SVR_H */

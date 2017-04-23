@@ -79,10 +79,4 @@ void cmd_cwd(SOCKET sock, char *arg);
 */
 int svr_main(int argc, char *argv[], int PORT);
 
-typedef struct
-{
-   SOCKET sock;
-   char name[BUF_SIZE];
-} Client;
-
 #endif /* PI_SVR_H */
