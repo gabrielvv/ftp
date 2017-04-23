@@ -2,6 +2,6 @@
 
 int main(int argc, char *argv[]){
 
-  svr_main(argc, argv, /* PORT */20);
+  pi_svr_main(argc, argv);
 
 }

@@ -1,5 +1,7 @@
 #include "dtp_commons.h"
-#include "pi_commons.h" /* SOCKET */
+#include "ftp_commons.h" /* SOCKET */
+#include <stdio.h> /* FILE */
+#include <string.h> /* memset */
 
 void fsupload(SOCKET to_sock, FILE* file){
    //fread

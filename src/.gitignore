@@ -3,3 +3,5 @@ ProgrammeClient
 build.sh
 download.txt
 upload.txt
+test_dtp_cli.c
+test_dtp_svr.c

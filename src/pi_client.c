@@ -1,5 +1,6 @@
 #include "pi_client.h"
 #include "pi_commons.h"
+#include "ftp_commons.h"
 
 #ifdef WIN32
 
@@ -19,76 +20,81 @@
 
 #endif /* WIN32 */
 
-/**
- * init the sclient
- * @param  address
- * @return new socket (file descriptor)
- */
-SOCKET init_client_connection(const char *address, const int port)
-{
-   // create a new socket
-   SOCKET sock = socket(AF_INET, SOCK_STREAM, 0);
-   SOCKADDR_IN sin = { 0 };
-   struct hostent *hostinfo;
+#define PI_DEFAULT_PORT 20
 
-   if(sock == INVALID_SOCKET)
+int pi_cli_main(int argc, char **argv){
+   if(argc < 2)
    {
-      perror("socket()");
-      exit(errno);
+      printf("Usage : %s [address] [pseudo]\n", argv[0]);
+      return -1;
    }
 
-   hostinfo = gethostbyname(address);
-   if (hostinfo == NULL)
+   printf("\n\n");
+   printf("___  _____  ___    ___  _     ___  ___  _  _  _____ \n");
+   printf("| __||_   _|| _ \\  / __|| |   |_ _|| __|| \\| ||_   _|\n");
+   printf("| _|   | |  |  _/ | (__ | |__  | | | _| | .` |  | | \n");
+   printf("|_|    |_|  |_|    \\___||____||___||___||_|\\_|  |_|  \n");
+   printf("\n\n");
+
+   printf("Welcome to Ftp client\n");
+   printf("Enter --help  To see the different available commands\n");
+
+
+   SOCKET sock = init_client_connection(argv[1], PI_DEFAULT_PORT);
+   char buffer[BUF_SIZE];
+   fd_set rdfs;
+
+   //TODO
+   printf("Authentification\n");
+   fflush(stdout);
+   write_server(sock, argv[2]);
+   while(1)
    {
-      fprintf (stderr, "Unknown host %s.\n", address);
-      exit(EXIT_FAILURE);
+      FD_ZERO(&rdfs);
+
+      FD_SET(STDIN_FILENO, &rdfs);
+
+      /* add the socket */
+      FD_SET(sock, &rdfs);
+
+      if(select(sock + 1, &rdfs, NULL, NULL, NULL) == -1)
+      {
+         perror("select()");
+         exit(errno);
+      }
+
+      // get from input
+      if(FD_ISSET(STDIN_FILENO, &rdfs))
+      {
+         fgets(buffer, BUF_SIZE - 1, stdin);
+         {
+            char *p = NULL;
+            p = strstr(buffer, "\n");
+            if(p != NULL)
+            {
+               *p = 0;
+            }
+            else
+            {
+               buffer[BUF_SIZE - 1] = 0;
+            }
+         }
+         fflush(stdout);
+         printf("write : %s\n", buffer);
+         write_server(sock, buffer);
+      }
+      else if(FD_ISSET(sock, &rdfs))
+      {
+         printf("Receive : ");
+         int n = read_server(sock, buffer);
+         if(n == 0)
+         {
+            printf("Server disconnected !\n");
+            break;
+         }
+         puts(buffer);
+      }
    }
-
-   sin.sin_addr = *(IN_ADDR *) hostinfo->h_addr;
-   sin.sin_port = htons(port);
-   sin.sin_family = AF_INET;
-
-   // try connect client to server with struct sin
-   if(connect(sock,(SOCKADDR *) &sin, sizeof(SOCKADDR)) == SOCKET_ERROR)
-   {
-      perror("connect()");
-      exit(errno);
-   }
-   return sock;
-}
-
-/*
-* read msg from server
-* @param  sock  {SOCKET}  socket  to listen
-* @param  buffer  {char*}  buffer for msg
-* @return {int} return Buffer size
-*/
-int read_server(SOCKET sock, char *buffer)
-{
-   int n = 0;
-
-   if((n = recv(sock, buffer, BUF_SIZE - 1, 0)) < 0)
-   {
-      perror("recv()");
-      exit(errno);
-   }
-
-   buffer[n] = 0;
-
-   return n;
-}
-
-
-/**
-* allow to send msg on server
-* @param  sock  {SOCKET}  socket  to write
-* @param  message  {char*}  Message to send
-*/
-void write_server(SOCKET sock, const char *buffer)
-{
-   if( send(sock, buffer, strlen(buffer), 0) < 0 )
-   {
-      perror("send()");
-      exit(errno);
-   }
+   closesocket(sock);
+   return 0;
 }

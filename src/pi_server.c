@@ -1,5 +1,6 @@
 #include "pi_server.h"
 #include "pi_commons.h"
+#include "ftp_commons.h"
 
 #ifdef WIN32 // if windows
 
@@ -22,62 +23,7 @@
 #endif /* WIN32 */
 
 #define MAX_CLIENT 10
-
-SOCKET init_server_connection(const int port, int nb_client){
-  // create a new socket
-  SOCKET sock = socket(AF_INET, SOCK_STREAM, 0);
-  SOCKADDR_IN sin = { 0 };
-
-  if(sock == INVALID_SOCKET)
-  {
-    perror("socket()");
-   }
-
-   sin.sin_addr.s_addr = htonl(INADDR_ANY);
-   sin.sin_port = htons(port);
-   sin.sin_family = AF_INET;
-
-   // bind struct sin on socket IP/PORT
-   if(bind(sock,(SOCKADDR *) &sin, sizeof sin) == SOCKET_ERROR)
-   {
-      perror("bind()");
-      exit(errno);
-   }
-
-   // server listen for client
-   if(listen(sock, nb_client) == SOCKET_ERROR)
-   {
-      perror("listen()");
-      exit(errno);
-   }
-   return sock;
-}
-
-
-int read_client(SOCKET client_sock, char *buffer)
-{
-   //printf("on passe dans le red client\n");
-   int n = 0;
-   if((n = recv(client_sock, buffer, BUF_SIZE - 1, 0)) < 0)
-   {
-      perror("recv()");
-      n = 0;
-   }
-   buffer[n] = 0;
-   //printf("n : %s\n",buffer);
-   return n;
-}
-
-
-void write_client(SOCKET client_sock, char * message) {
-    int length = strlen(message);
-
-    if(write(client_sock, message, length) != length) {
-        perror("Error writing message");
-        close(client_sock);
-      }
-}
-
+#define PI_DEFAULT_PORT 20
 
 int parse_cmd(char* buffer, char * arg)
 {
@@ -209,7 +155,7 @@ void cmd_cwd(SOCKET sock, char *arg){
 }
 
 
-int svr_main(int argc, char *argv[], const int port){
+int pi_svr_main(int argc, char *argv[]){
   
   printf("\n");
   printf("\n");
@@ -226,7 +172,7 @@ int svr_main(int argc, char *argv[], const int port){
   Client clients[MAX_CLIENT];
   int cpt_client = 0;
   char buffer[BUF_SIZE];
-  SOCKET sockServer = init_server_connection(port,MAX_CLIENT);
+  SOCKET sockServer = init_server_connection(PI_DEFAULT_PORT, MAX_CLIENT);
   int max = sockServer;
   fd_set rdfs;
   fflush(stdout);

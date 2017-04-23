@@ -1,5 +1,5 @@
-set (PI_SOURCES pi_server.c pi_client.c pi_commons.c)
-set (DTP_SOURCES dtp_server.c dtp_client.c pi_commons.c)
+set (PI_SOURCES pi_server.c pi_client.c pi_commons.c ftp_commons.c)
+set (DTP_SOURCES dtp_server.c dtp_client.c dtp_commons.c ftp_commons.c)
 set (FTP_SOURCES pi_svr_main.c)
 
 add_library (ftp_pi ${PI_SOURCES})

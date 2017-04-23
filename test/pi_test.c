@@ -2,7 +2,8 @@
 
 #include "pi_server.h"
 #include "pi_client.h"
-#include "pi_commons.h"
+#include "pi_commons.h" /* COMMAND TYPE IDENTIFIERS */
+#include "ftp_commons.h" /* SOCKET, BUF_SIZE */
 
 #include <string.h>
 #include <unistd.h> /* close */

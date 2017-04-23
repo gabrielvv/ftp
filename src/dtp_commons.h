@@ -1,7 +1,8 @@
 #ifndef DTP_COMMONS_H
 #define DTP_COMMONS_H
 
-#include "pi_commons.h" /* SOCKET */
+#include "ftp_commons.h" /* SOCKET */
+#include <stdio.h> /* FILE */
 
 void fupload(SOCKET, const char*);
 void fsupload(SOCKET, FILE*);

@@ -2,31 +2,7 @@
 #define PI_SVR_H
 
 #include "pi_commons.h"
-
-/**
- * \brief init the server
- * @param[in]  port      port
- * @param[in]  nb_client Number of clients
- *
- * @return new socket (file descriptor)
- */
-SOCKET init_server_connection(int port, int nb_client);
-
-/*
-* \brief read msg from client
-* @param[in]  client_sock   socket  to listen
-* @param[out] buffer buffer for msg
-*
-* @return Buffer size
-*/
-int read_client(SOCKET client_sock, char *buffer);
-
-/**
-* \brief allow to send msg on client
-* @param[in, out] client_sock socket to write
-* @param[in]      message     Message to send
-*/
-void write_client(SOCKET client_sock, char * message);
+#include "ftp_commons.h"
 
 /**
  * parse cmd send by client
@@ -77,6 +53,6 @@ void cmd_cwd(SOCKET sock, char *arg);
 * @param[in] argv
 * @param[in] PORT 
 */
-int svr_main(int argc, char *argv[], int PORT);
+int pi_svr_main(int argc, char *argv[]);
 
 #endif /* PI_SVR_H */
