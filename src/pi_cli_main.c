@@ -1,4 +1,5 @@
-#include "pi_client.c"
+#include "pi_client.h"
+#include "pi_commons.h"
 
 int main(int argc, char **argv)
 {

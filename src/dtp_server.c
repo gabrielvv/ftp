@@ -1,24 +1,27 @@
 #include "pi_server.h"
+#include "pi_commons.h"
 
- void init(void)
-{
-#ifdef WIN32
-    WSADATA wsa;
-    int err = WSAStartup(MAKEWORD(2, 2), &wsa);
-    if(err < 0)
-    {
-        puts("WSAStartup failed !");
-        exit(EXIT_FAILURE);
-    }
-#endif
-}
+#ifdef WIN32 // if windows
 
- void end(void)
-{
-#ifdef WIN32
-    WSACleanup();
+#include <winsock2.h>
+
+#else // if not supported
+
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <string.h>
+#include <unistd.h> /* close */
+#include <netdb.h> /* gethostbyname */
+#include <stdio.h>
+#include <stdlib.h>
+#include <errno.h>
+#include <sys/stat.h>
+
 #endif
-}
+
+#define MAX_CLIENT 10
 
 /**
  * init the server

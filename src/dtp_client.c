@@ -1,27 +1,24 @@
 #include <stdio.h>
 #include "dtp_client.h"
+#include "pi_commons.h"
 
-void init(void)
-{
 #ifdef WIN32
-   WSADATA wsa;
-   int err = WSAStartup(MAKEWORD(2, 2), &wsa);
-   if(err < 0)
-   {
-      puts("WSAStartup failed !");
-      return -1;
-   }
+
+#include <winsock2.h>
+
+#else
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <unistd.h>
+#include <netdb.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <errno.h>
+#include <string.h>
+
 #endif
-}
-
-static void end(void)
-{
-#ifdef WIN32
-   WSACleanup();
-#endif
-}
-
-
 
 /**
  * init the sclient
@@ -111,7 +108,7 @@ void fupload(SOCKET to_sock, const char* path){
 * Truncate file to zero length or create text  file  for  writing.
 * The stream is positioned at the beginning of the file.
 *
-* @desc download data as file and store to path
+* @brief download data as file and store to path
 *
 * @param to_sock {SOCKET}
 * @param path    {char*}

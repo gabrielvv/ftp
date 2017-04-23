@@ -1,33 +1,30 @@
 #include "pi_client.h"
+#include "pi_commons.h"
 
-void init(void)
-{
 #ifdef WIN32
-   WSADATA wsa;
-   int err = WSAStartup(MAKEWORD(2, 2), &wsa);
-   if(err < 0)
-   {
-      puts("WSAStartup failed !");
-      return -1;
-   }
-#endif
-}
 
-static void end(void)
-{
-#ifdef WIN32
-   WSACleanup();
-#endif
-}
+#include <winsock2.h>
 
+#else
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <unistd.h>
+#include <netdb.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <errno.h>
+#include <string.h>
 
+#endif /* WIN32 */
 
 /**
  * init the sclient
- * @param  address {int}     address
- * @return {int} return new socket (file descriptor)
+ * @param  address
+ * @return new socket (file descriptor)
  */
-int init_client_connection(const char *address)
+SOCKET init_client_connection(const char *address, const int port)
 {
    // create a new socket
    SOCKET sock = socket(AF_INET, SOCK_STREAM, 0);
@@ -48,7 +45,7 @@ int init_client_connection(const char *address)
    }
 
    sin.sin_addr = *(IN_ADDR *) hostinfo->h_addr;
-   sin.sin_port = htons(PORT);
+   sin.sin_port = htons(port);
    sin.sin_family = AF_INET;
 
    // try connect client to server with struct sin
@@ -89,7 +86,7 @@ int read_server(SOCKET sock, char *buffer)
 */
 void write_server(SOCKET sock, const char *buffer)
 {
-   if(send(sock, buffer, strlen(buffer), 0) < 0)
+   if( send(sock, buffer, strlen(buffer), 0) < 0 )
    {
       perror("send()");
       exit(errno);

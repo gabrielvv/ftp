@@ -1,32 +1,29 @@
 #include "pi_server.h"
+#include "pi_commons.h"
 
-void init(void)
-{
-#ifdef WIN32
-    WSADATA wsa;
-    int err = WSAStartup(MAKEWORD(2, 2), &wsa);
-    if(err < 0)
-    {
-        puts("WSAStartup failed !");
-        exit(EXIT_FAILURE);
-    }
-#endif
-}
+#ifdef WIN32 // if windows
 
-void end(void)
-{
-#ifdef WIN32
-    WSACleanup();
-#endif
-}
+#include <winsock2.h>
 
-/**
- * init the server
- * @param  port  {int}     port
- * @param  nb_client {int} Number of clients
- * @return {int} return new socket (file descriptor)
- */
-int init_server_connection(int port, int nb_client){
+#else // if not supported
+
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <string.h>
+#include <unistd.h> /* close */
+#include <netdb.h> /* gethostbyname */
+#include <stdio.h>
+#include <stdlib.h>
+#include <errno.h>
+#include <sys/stat.h>
+
+#endif /* WIN32 */
+
+#define MAX_CLIENT 10
+
+SOCKET init_server_connection(const int port, int nb_client){
   // create a new socket
   SOCKET sock = socket(AF_INET, SOCK_STREAM, 0);
   SOCKADDR_IN sin = { 0 };
@@ -56,17 +53,12 @@ int init_server_connection(int port, int nb_client){
    return sock;
 }
 
-/*
-* read msg from client
-* @param  sock  {SOCKET}  socket  to listen
-* @param  buffer  {char*}  buffer for msg
-* @return {int} return Buffer size
-*/
-int read_client(SOCKET sock, char *buffer)
+
+int read_client(SOCKET client_sock, char *buffer)
 {
    //printf("on passe dans le red client\n");
    int n = 0;
-   if((n = recv(sock, buffer, BUF_SIZE - 1, 0)) < 0)
+   if((n = recv(client_sock, buffer, BUF_SIZE - 1, 0)) < 0)
    {
       perror("recv()");
       n = 0;
@@ -76,25 +68,17 @@ int read_client(SOCKET sock, char *buffer)
    return n;
 }
 
-/**
-* allow to send msg on client
-* @param  sock  {SOCKET}  socket  to write
-* @param  message  {char*}  Message to send
-*/
-void write_client(int socket_fd, char * message) {
+
+void write_client(SOCKET client_sock, char * message) {
     int length = strlen(message);
 
-    if(write(socket_fd, message, length) != length) {
+    if(write(client_sock, message, length) != length) {
         perror("Error writing message");
-        close(socket_fd);
+        close(client_sock);
       }
 }
 
-/**
- * parse cmd send by client
- * @param buffer [description]
- * @param arg    [description]
- */
+
 int parse_cmd(char* buffer, char * arg)
 {
 
@@ -171,10 +155,7 @@ int parse_cmd(char* buffer, char * arg)
   \____\___/|_|  |_|_|  |_/_/   \_\_| \_|____/
 */
 
-/** get current directory path
-* @param sock socket client to write
-* @param arg  argument
-*/
+
 void cmd_pwd(SOCKET sock,char *arg){
     char cwd[1024];
     char msg_return[1024] = "Current working dir : ";
@@ -190,11 +171,7 @@ void cmd_pwd(SOCKET sock,char *arg){
 
 }
 
-/**
- * create a new directory
- * @param sock socket client to write
- * @param arg  argument file path
- */
+
 void cmd_mkdir(SOCKET sock, char *arg){
   if(arg == NULL){
     perror("mkdir() error");
@@ -204,11 +181,7 @@ void cmd_mkdir(SOCKET sock, char *arg){
   }
 }
 
-/**
- * remove a directory
- * @param sock socket client to write
- * @param arg  argument directory path to delete
- */
+
 void cmd_rmd(SOCKET sock, char *arg){
   if(rmdir(arg)==0){
      write_client(sock, "250 : OK, directory deleted \n");
@@ -217,11 +190,7 @@ void cmd_rmd(SOCKET sock, char *arg){
    }
 }
 
-/**
- * remove a file
- * @param sock socket client to write
- * @param arg  argument file path to delete
- */
+
 void cmd_dele(SOCKET sock, char *arg){
   if(remove(arg)==0){
       write_client(sock, "250 : OK, file deleted \n");
@@ -230,11 +199,7 @@ void cmd_dele(SOCKET sock, char *arg){
    }
 }
 
-/**
- * change current diretory
- * @param sock socket client to write
- * @param arg    argument Directory path
- */
+
 void cmd_cwd(SOCKET sock, char *arg){
   if(chdir(arg)==0){
       write_client(sock, "250 : OK, Directory changed \n");
@@ -242,3 +207,134 @@ void cmd_cwd(SOCKET sock, char *arg){
       write_client(sock, "250 : Failed to change directory \n");
     }
 }
+
+
+int svr_main(int argc, char *argv[], const int port){
+  
+  printf("\n");
+  printf("\n");
+  printf(" ___  _____  ___     ___  ___  ___ __   __ ___  ___\n");
+  printf("| __||_   _|| _ \\  \\ / __|| __|| _ \\\\ \\ / /| __|| _ \\\n");
+  printf("| _|   | |  |  _/   \\__ \\| _| |   / \\ V / | _| |   /\n");
+  printf("|_|    |_|  |_|     |___/|___||_|_\\  \\_/  |___||_|_\\\n");
+  printf("\n");
+  printf("\n");
+  printf("--help To see the different available commands\n");
+
+  //printf("Init server\n");
+  init(); //init socket for windows;
+  Client clients[MAX_CLIENT];
+  int cpt_client = 0;
+  char buffer[BUF_SIZE];
+  SOCKET sockServer = init_server_connection(port,MAX_CLIENT);
+  int max = sockServer;
+  fd_set rdfs;
+  fflush(stdout);
+
+  while(1){
+    int i =0;
+    int ret = 0;
+    FD_ZERO(&rdfs);
+    FD_SET(sockServer, &rdfs);
+    //printf("on boucle\n" );
+
+    FD_SET(sockServer, &rdfs);
+    /* add socket of each client */
+     for(i = 0; i < cpt_client; i++)
+     {
+        FD_SET(clients[i].sock, &rdfs);
+     }
+
+    if((ret = select(max + 1, &rdfs, NULL, NULL, NULL)) < 0)
+    {
+     perror("select()");
+     exit(errno);
+    }
+
+    // new client
+    if(FD_ISSET(sockServer, &rdfs)){
+      printf("Welcome new user is online\n");
+      fflush(stdout);
+      SOCKADDR_IN csin = { 0 };
+      int client_sock = accept(sockServer, NULL,NULL);
+      if(client_sock == SOCKET_ERROR)
+      {
+          perror("accept()");
+          continue;
+      }
+      /* after connecting */
+      //TODO need authentification
+      if(read_client(client_sock, buffer) == -1)
+      {
+          /* disconnected */
+          continue;
+      }
+      /* wnew maximum fd ? */
+      max = client_sock > max ? client_sock : max;
+
+      FD_SET(client_sock, &rdfs);
+      Client c = { client_sock };
+      strncpy(c.name, buffer, BUF_SIZE - 1);
+      clients[cpt_client] = c;
+      cpt_client++;
+      //printf("on ajout le 1er client\n");
+      fflush(stdout);
+      continue;
+
+    //after connection treat actions
+    }else{
+      //printf("traitement en cours...\n");
+      fflush(stdout);
+      int i = 0;
+        for(i = 0; i < cpt_client; i++)
+        {
+           /* a client send a cmd */
+           if(FD_ISSET(clients[i].sock, &rdfs))
+           {
+              Client client = clients[i];
+              int c = read_client(clients[i].sock, buffer);
+              //printf("n : %s\n",buffer);
+              char arg[BUF_SIZE];
+              switch(parse_cmd(buffer,arg)){
+                case PWD :
+                          printf("PWD print directory %s\n", arg);
+                          cmd_pwd(clients[i].sock, arg);
+                          break;
+                case CDUP :
+                          printf("CDUP Change to Parent Directory %s \n",arg);
+                          break;
+                case SMNT :
+                          printf("SMNT Structure Mount %s\n",arg);
+                          break;
+                case STOU :
+                          printf("STOU Store Unique %s\n", arg);
+                          break;
+                case MKD :
+                          printf("MKD Make Directory %s\n",arg);
+                          cmd_mkdir(clients[i].sock, arg);
+                          break;
+                case RMD :
+                          printf("RMD Delete Directory %s\n", arg);
+                          cmd_rmd(clients[i].sock, arg);
+                          break;
+                case SYST :
+                          printf("SYST Make Directory %s\n", arg);
+                          break;
+                case DELE :
+                          printf("DELE DELETE FILE %s\n",arg);
+                          cmd_dele(clients[i].sock, arg);
+                          break;
+                case CWD :
+                          printf("CWD change directory %s\n",arg);
+                          cmd_cwd(clients[i].sock, arg);
+                          break;
+                case INVALID :
+                          printf("Invalid cmd %s\n",arg);
+                          break;
+              }
+           }
+        }
+    }
+  };
+  return 0;
+}// svr_main

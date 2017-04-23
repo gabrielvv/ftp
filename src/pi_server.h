@@ -1,61 +1,88 @@
-#ifdef WIN32 // if windows
+#ifndef PI_SVR_H
+#define PI_SVR_H
 
-#include <winsock2.h>
+#include "pi_commons.h"
 
-#else // if not supported
+/**
+ * \brief init the server
+ * @param[in]  port      port
+ * @param[in]  nb_client Number of clients
+ *
+ * @return new socket (file descriptor)
+ */
+SOCKET init_server_connection(int port, int nb_client);
 
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <string.h>
-#include <unistd.h> /* close */
-#include <netdb.h> /* gethostbyname */
-#include <stdio.h>
-#include <stdlib.h>
-#include <errno.h>
-#include <sys/stat.h>
-#define INVALID_SOCKET -1
-#define SOCKET_ERROR -1
-#define BUF_SIZE 1024
-#define closesocket(s) close(s)
+/*
+* \brief read msg from client
+* @param[in]  client_sock   socket  to listen
+* @param[out] buffer buffer for msg
+*
+* @return Buffer size
+*/
+int read_client(SOCKET client_sock, char *buffer);
 
-//COMMAND TYPE IDENTIFIERS:
-#define INVALID -1
-#define PWD 0
-#define CDUP 1
-#define SMNT 2
-#define STOU 3
-#define MKD 4
-#define RMD 5
-#define SYST 6
-#define DELE 7
-#define CWD 8
+/**
+* \brief allow to send msg on client
+* @param[in, out] client_sock socket to write
+* @param[in]      message     Message to send
+*/
+void write_client(SOCKET client_sock, char * message);
 
-typedef int SOCKET;
-typedef struct sockaddr_in SOCKADDR_IN;
-typedef struct sockaddr SOCKADDR;
-typedef struct in_addr IN_ADDR;
-
-#endif
-
-#define MAX_CLIENT 10
-
-void init(void);
-void end(void);
-int init_server_connection(int port, int nb_client);
-int read_client(SOCKET sock, char *buffer);
-void write_client(int socket_fd, char * message);
+/**
+ * parse cmd send by client
+ * @param[in] buffer [description]
+ * @param[in] arg    [description]
+ *
+ * @return cmd identifier
+ */
 int parse_cmd(char* buffer, char * arg);
+
+/** get current directory path
+* @param[in, out] sock socket client to write
+* @param[in]      arg  argument
+*/
 void cmd_pwd(SOCKET sock,char *arg);
+
+/**
+ * create a new directory
+ * @param[in, out] sock socket client to write
+ * @param[in]      arg  argument file path
+ */
 void cmd_mkdir(SOCKET sock, char *arg);
+
+/**
+ * remove a directory
+ * @param sock socket client to write
+ * @param arg  argument directory path to delete
+ */
 void cmd_rmd(SOCKET sock, char *arg);
+
+/**
+ * remove a file
+ * @param[in, out] sock socket client to write
+ * @param[in] arg  argument file path to delete
+ */
 void cmd_dele(SOCKET sock, char *arg);
+
+/**
+ * change current diretory
+ * @param[in, out] sock socket client to write
+ * @param[in] arg  argument Directory path
+ */
 void cmd_cwd(SOCKET sock, char *arg);
 
+/**
+*
+* @param[in] argc
+* @param[in] argv
+* @param[in] PORT 
+*/
+int svr_main(int argc, char *argv[], int PORT);
 
 typedef struct
 {
    SOCKET sock;
    char name[BUF_SIZE];
-}Client;
+} Client;
+
+#endif /* PI_SVR_H */
