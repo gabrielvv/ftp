@@ -23,7 +23,7 @@ void fupload(SOCKET to_sock, const char* path){
   fflush(stdout);
 }  
 
-void fdownload(SOCKET to_sock, const char* path){
+void fdownload(SOCKET from_sock, const char* path){
    
    printf("client download start\n");
    fflush(stdout);
@@ -32,7 +32,7 @@ void fdownload(SOCKET to_sock, const char* path){
    char buffer[BUF_SIZE];
 
    while(1){
-      int n = read_server(to_sock, buffer);
+      int n = read_server(from_sock, buffer);
 
       // ecriture non formatée binaire
       // cf. remarques et limitations dans cours
