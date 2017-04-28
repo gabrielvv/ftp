@@ -6,6 +6,8 @@
 
 #else
 
+#include <sys/stat.h> //fstat
+
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -69,31 +71,6 @@ SOCKET init_server_connection(const int port, int nb_client){
    return sock;
 }
 
-
-int read_client(SOCKET client_sock, char *buffer)
-{
-   //printf("on passe dans le red client\n");
-   int n = 0;
-   if((n = recv(client_sock, buffer, BUF_SIZE - 1, 0)) < 0)
-   {
-      perror("recv()");
-      n = 0;
-   }
-   buffer[n] = 0;
-   //printf("n : %s\n",buffer);
-   return n;
-}
-
-
-void write_client(SOCKET client_sock, char * message) {
-    int length = strlen(message);
-
-    if(write(client_sock, message, length) != length) {
-        perror("Error writing message");
-        close(client_sock);
-      }
-}
-
 SOCKET init_client_connection(const char *address, const int port)
 {
    // create a new socket
@@ -127,26 +104,66 @@ SOCKET init_client_connection(const char *address, const int port)
    return sock;
 }
 
-int read_server(SOCKET sock, char *buffer)
+int read_socket(SOCKET sock, char *buffer)
 {
    int n = 0;
 
-   if((n = recv(sock, buffer, BUF_SIZE - 1, 0)) < 0)
-   {
-      perror("recv()");
-      exit(errno);
-   }
+   if(is_socket(sock) > 0){
 
-   buffer[n] = 0;
+     // SOCKET
+     if((n = recv(sock, buffer, BUF_SIZE - 1, 0)) < 0)
+     {
+        perror("recv()");
+        close(sock);
+        exit(errno);
+     }
+
+     buffer[n] = '\0';
+
+   }else{
+      // printf("read_socket FILE\n");
+      // printf("fd %d\n", sock);
+      // FILE
+      if((n = read(sock, buffer, BUF_SIZE)) < 0)
+      {
+        perror("read()");
+        close(sock);
+        exit(errno);
+      }
+
+      // printf("read buffer %s\n", buffer);
+
+      // buffer[n] = '\0';
+   }
 
    return n;
 }
 
-void write_server(SOCKET sock, const char *buffer)
+void write_socket(SOCKET sock, const char *buffer)
 {
-   if( send(sock, buffer, strlen(buffer), 0) < 0 )
-   {
+  int length = strlen(buffer);
+
+  if(is_socket(sock) > 0){
+    // SOCKET
+    if( send(sock, buffer, length, /* FLAG */0) != length )
+    {
       perror("send()");
+      close(sock);
       exit(errno);
-   }
+    }
+  }else{
+    // FILE
+    if( write(sock, buffer, length) != length )
+    {
+      perror("write()");
+      close(sock);
+      exit(errno);
+    }
+  }
+}
+
+int is_socket(int fd){
+  struct stat statbuf;
+  fstat(fd, &statbuf);
+  return S_ISSOCK(statbuf.st_mode);
 }

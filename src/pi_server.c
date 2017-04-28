@@ -108,13 +108,12 @@ void cmd_pwd(SOCKET sock,char *arg){
     if(getcwd(cwd, sizeof(cwd)) != NULL){
       strcat(msg_return, cwd);
       printf("%s\n",msg_return);
-      write_client(sock, msg_return);
+      write_socket(sock, msg_return);
     }
     else{
        perror("getcwd() error");
-       write_client(sock, "getcwd() error");
+       write_socket(sock, "getcwd() error");
     }
-
 }
 
 
@@ -123,34 +122,34 @@ void cmd_mkdir(SOCKET sock, char *arg){
     perror("mkdir() error");
   }else{
       mkdir(arg, 0777);
-      write_client(sock, "created");
+      write_socket(sock, "created");
   }
 }
 
 
 void cmd_rmd(SOCKET sock, char *arg){
   if(rmdir(arg)==0){
-     write_client(sock, "250 : OK, directory deleted \n");
+     write_socket(sock, "250 : OK, directory deleted \n");
    }else{
-     write_client(sock, "550 Cannot delete directory.\n");
+     write_socket(sock, "550 Cannot delete directory.\n");
    }
 }
 
 
 void cmd_dele(SOCKET sock, char *arg){
   if(remove(arg)==0){
-      write_client(sock, "250 : OK, file deleted \n");
+      write_socket(sock, "250 : OK, file deleted \n");
    }else{
-      write_client(sock, "550 Cannot delete file.\n");
+      write_socket(sock, "550 Cannot delete file.\n");
    }
 }
 
 
 void cmd_cwd(SOCKET sock, char *arg){
   if(chdir(arg)==0){
-      write_client(sock, "250 : OK, Directory changed \n");
+      write_socket(sock, "250 : OK, Directory changed \n");
     }else{
-      write_client(sock, "250 : Failed to change directory \n");
+      write_socket(sock, "250 : Failed to change directory \n");
     }
 }
 
@@ -210,7 +209,7 @@ int pi_svr_main(int argc, char *argv[]){
       }
       /* after connecting */
       //TODO need authentification
-      if(read_client(client_sock, buffer) == -1)
+      if(read_socket(client_sock, buffer) == -1)
       {
           /* disconnected */
           continue;
@@ -238,7 +237,7 @@ int pi_svr_main(int argc, char *argv[]){
            if(FD_ISSET(clients[i].sock, &rdfs))
            {
               Client client = clients[i];
-              int c = read_client(clients[i].sock, buffer);
+              int c = read_socket(clients[i].sock, buffer);
               //printf("n : %s\n",buffer);
               char arg[BUF_SIZE];
               switch(parse_cmd(buffer,arg)){

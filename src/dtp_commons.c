@@ -17,8 +17,9 @@ void fupload(SOCKET to_sock, const char* path){
 
   while(feof(fp) == 0){
     fread(buffer, sizeof(char), BUF_SIZE, fp);
-    write_client(to_sock, buffer);
+    write_socket(to_sock, buffer);
   }
+  fclose(fp);
   printf("end of server upload\n");
   fflush(stdout);
 }  
@@ -32,17 +33,31 @@ void fdownload(SOCKET from_sock, const char* path){
    char buffer[BUF_SIZE];
 
    while(1){
-      int n = read_server(from_sock, buffer);
+      int n = read_socket(from_sock, buffer);
 
+      int eof = 0;
+
+      // printf("fdownload buffer:%s\n", buffer);
+      // printf("fdownload n:%d\n", n);
+      
       // ecriture non formatée binaire
       // cf. remarques et limitations dans cours
-      fwrite(buffer, sizeof(char), n, fp);
+      fwrite(buffer, sizeof(char), strlen(buffer), fp);
 
-      // feof returns non-zero if the end-of-file indicator is set
-      if(feof(fp) != 0)
-         break;
+      break;
+      int i = 0;
+      for(; i < strlen(buffer); i++){
+        if(buffer[i] == '\0'){
+          eof = 1;
+          break;
+        }
+      }
+
+      if(eof || n == 0)
+        break;
    }
 
+   fclose(fp);
    printf("end of client download\n");
    fflush(stdout);
 }

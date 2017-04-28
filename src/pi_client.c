@@ -47,7 +47,7 @@ int pi_cli_main(int argc, char **argv){
    //TODO
    printf("Authentification\n");
    fflush(stdout);
-   write_server(sock, argv[2]);
+   write_socket(sock, argv[2]);
    while(1)
    {
       FD_ZERO(&rdfs);
@@ -81,12 +81,12 @@ int pi_cli_main(int argc, char **argv){
          }
          fflush(stdout);
          printf("write : %s\n", buffer);
-         write_server(sock, buffer);
+         write_socket(sock, buffer);
       }
       else if(FD_ISSET(sock, &rdfs))
       {
          printf("Receive : ");
-         int n = read_server(sock, buffer);
+         int n = read_socket(sock, buffer);
          if(n == 0)
          {
             printf("Server disconnected !\n");

@@ -4,7 +4,12 @@
 #include "ftp_commons.h" /* SOCKET */
 #include <stdio.h> /* FILE */
 
-void fupload(SOCKET, const char*);
+/**
+*
+* upload of file pointed by path
+*
+*/
+void fupload(SOCKET, const char* path);
 void fsupload(SOCKET, FILE*);
 
 /**

@@ -35,22 +35,6 @@ void end(void);
  */
 SOCKET init_server_connection(int port, int nb_client);
 
-/*
-* \brief read msg from client
-* @param[in]  client_sock   socket  to listen
-* @param[out] buffer buffer for msg
-*
-* @return Buffer size
-*/
-int read_client(SOCKET client_sock, char *buffer);
-
-/**
-* \brief allow to send msg on client
-* @param[in, out] client_sock socket to write
-* @param[in]      message     Message to send
-*/
-void write_client(SOCKET client_sock, char * message);
-
 /**
  * init the sclient
  * @param  address
@@ -59,18 +43,21 @@ void write_client(SOCKET client_sock, char * message);
 SOCKET init_client_connection(const char *address, const int port);
 
 /*
-* read msg from server
-* @param  sock  {SOCKET}  socket  to listen
-* @param  buffer  {char*}  buffer for msg
-* @return {int} return Buffer size
+* \brief read msg from client
+* @param[in]  client_sock   socket  to listen
+* @param[out] buffer buffer for msg
+*
+* @return Buffer size
 */
-int read_server(SOCKET sock, char *buffer);
+int read_socket(SOCKET sock, char*);
 
 /**
-* allow to send msg on server
-* @param  sock  {SOCKET}  socket  to write
-* @param  message  {char*}  Message to send
+* \brief allow to send msg on client
+* @param[in, out] client_sock socket to write
+* @param[in]      message     Message to send
 */
-void write_server(SOCKET sock, const char *buffer);
+void write_socket(SOCKET sock, const char*);
+
+int is_socket(int fd);
 
 #endif /* FTP_COMMONS_H */

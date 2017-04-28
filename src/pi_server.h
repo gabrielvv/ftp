@@ -6,8 +6,8 @@
 
 /**
  * parse cmd send by client
- * @param[in] buffer [description]
- * @param[in] arg    [description]
+ * @param[in] buffer 
+ * @param[in] arg    
  *
  * @return cmd identifier
  */
@@ -51,7 +51,7 @@ void cmd_cwd(SOCKET sock, char *arg);
 *
 * @param[in] argc
 * @param[in] argv
-* @param[in] PORT 
+* @param[in] PORT
 */
 int pi_svr_main(int argc, char *argv[]);
 
