@@ -4,15 +4,6 @@
 #include "pi_commons.h"
 #include "ftp_commons.h"
 
-/**
- * parse cmd send by client
- * @param[in] buffer 
- * @param[in] arg    
- *
- * @return cmd identifier
- */
-int parse_cmd(char* buffer, char * arg);
-
 /** get current directory path
 * @param[in, out] sock socket client to write
 * @param[in]      arg  argument
@@ -47,7 +38,12 @@ void cmd_dele(SOCKET sock, char *arg);
  */
 void cmd_cwd(SOCKET sock, char *arg);
 
+void cmd_ls(SOCKET sock, char *arg);
+void cmd_put(SOCKET sock, char *arg);
+void cmd_get(SOCKET sock, char *arg);
+
 /**
+* @todo use getsockopt(), select() with efds and wdfds, shutdown()
 *
 * @param[in] argc
 * @param[in] argv

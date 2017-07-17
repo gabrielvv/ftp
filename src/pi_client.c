@@ -1,6 +1,7 @@
 #include "pi_client.h"
 #include "pi_commons.h"
 #include "ftp_commons.h"
+#include "dtp_commons.h"
 
 #ifdef WIN32
 
@@ -42,12 +43,14 @@ int pi_cli_main(int argc, char **argv){
 
    SOCKET sock = init_client_connection(argv[1], PI_DEFAULT_PORT);
    char buffer[BUF_SIZE];
+   int lastCommand;
+   char lastArg[BUF_SIZE];
    fd_set rdfs;
 
    //TODO
    printf("Authentification\n");
    fflush(stdout);
-   write_socket(sock, argv[2]);
+   //write_socket(sock, argv[2]);
    while(1)
    {
       FD_ZERO(&rdfs);
@@ -80,12 +83,14 @@ int pi_cli_main(int argc, char **argv){
             }
          }
          fflush(stdout);
-         printf("write : %s\n", buffer);
+
+         //printf("write : %s\n", buffer);
+         lastCommand = parse_cmd(buffer, lastArg);
          write_socket(sock, buffer);
       }
       else if(FD_ISSET(sock, &rdfs))
       {
-         printf("Receive : ");
+         //printf("Receive : ");
          int n = read_socket(sock, buffer);
          if(n == 0)
          {
@@ -93,6 +98,12 @@ int pi_cli_main(int argc, char **argv){
             break;
          }
          puts(buffer);
+         if(strcmp(buffer, "PUT Ready\n") == 0){
+            fupload(sock, lastArg);
+         }
+         if(strcmp(buffer, "GET Ready\n") == 0){
+            fdownload(sock, lastArg);
+         }
       }
    }
    closesocket(sock);

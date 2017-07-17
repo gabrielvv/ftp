@@ -12,5 +12,17 @@
 #define SYST 6
 #define DELE 7
 #define CWD 8
+#define PUT 9
+#define GET 10
+#define LS 11
+
+/**
+ * parse cmd send by client
+ * @param[in] buffer 
+ * @param[in] arg    
+ *
+ * @return cmd identifier
+ */
+int parse_cmd(char* buffer, char * arg);
 
 #endif /* PI_COMMONS_H */

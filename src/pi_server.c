@@ -1,6 +1,7 @@
 #include "pi_server.h"
 #include "pi_commons.h"
 #include "ftp_commons.h"
+#include "dtp_commons.h"
 
 #ifdef WIN32 // if windows
 
@@ -19,78 +20,13 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <sys/stat.h>
+#include <dirent.h>
 
 #endif /* WIN32 */
 
 #define MAX_CLIENT 10
 #define PI_DEFAULT_PORT 20
-
-int parse_cmd(char* buffer, char * arg)
-{
-
-  while(*buffer == ' ' || *buffer == '\t') {
-      buffer++;
-  }
-
-  int cmd = INVALID;
-  if(strncmp(buffer, "pwd", 3) == 0){
-    buffer = buffer + 3;
-    cmd = PWD;
-  }
-  if(strncmp(buffer, "cdup", 4) == 0){
-    buffer = buffer + 4;
-    cmd = CDUP;
-  }
-  if(strncmp(buffer, "smnt", 4) == 0){
-    buffer = buffer + 4;
-    cmd = SMNT;
-  }
-  if(strncmp(buffer, "stou", 4) == 0){
-    buffer = buffer + 4;
-    cmd = STOU;
-  }
-
-  if(strncmp(buffer, "mkd", 3) == 0){
-    buffer = buffer + 3;
-    cmd = MKD;
-  }
-  if(strncmp(buffer, "rmd", 3) ==0){
-    buffer = buffer + 3;
-    cmd = RMD;
-  }
-
-  if(strncmp(buffer, "syst", 4) == 0){
-    buffer = buffer + 4;
-    cmd = SYST;
-  }
-
-  if(strncmp(buffer, "dele",4)==0){
-    buffer = buffer + 4;
-    cmd = DELE;
-  }
-
-  if(strncmp(buffer, "cwd", 3)==0){
-    buffer = buffer + 3;
-    cmd = CWD;
-  }
-
-  if(arg != NULL){
-
-    while(*buffer == ' ' || *buffer == '\t') {
-        buffer++;
-    }
-
-    //Copy the argument over:
-    while((*buffer != ' ') && (*buffer != '\n') && (*buffer != '\r') && (*buffer != '\0')) {
-        *arg = *buffer;
-        arg++;
-        buffer++;
-    }
-    //Null-terminate:
-    *arg = '\0';
-  }
-  return cmd;
-}
+#define DTP_DEFAULT_PORT 21
 
 
 /*
@@ -153,6 +89,130 @@ void cmd_cwd(SOCKET sock, char *arg){
     }
 }
 
+void cmd_ls(SOCKET sock, char *arg){
+  char cwd[1024];
+  char result[1024] = "";
+  DIR *dir;
+  struct dirent *ent;
+  int cpt=0;
+  if ((dir = opendir (getcwd(cwd, sizeof(cwd)))) != NULL) {
+  /* print all the files and directories within directory */
+    while ((ent = readdir (dir)) != NULL) {
+      cpt++;
+      if(cpt>3){
+        strcat(result, ent->d_name);
+        strcat(result, "\t");
+
+        if(((cpt-3)%5)==0){
+          strcat(result, "\n");
+        }
+      }
+    }
+    strcat(result, "\n");
+    write_socket(sock, result);
+    closedir (dir);
+  } else {
+    write_socket(sock, "250 : Failed to print directory \n");
+  }
+}
+
+void cmd_put(SOCKET sock, char *arg){
+  char buffer[BUF_SIZE];
+  memset(buffer, 0, BUF_SIZE);
+
+  if(strcmp(arg, "") == 0){
+    write_socket(sock, "Missing argument\n");
+    return;
+  }
+  write_socket(sock, "PUT Ready\n");
+  //SOCKET sockServer = init_server_cclient_socketonnection(DTP_DEFAULT_PORT, MAX_CLIENT);
+  fdownload(sock, arg);
+}// cmd_put
+
+void cmd_get(SOCKET sock, char *arg){
+  char buffer[BUF_SIZE];
+  memset(buffer, 0, BUF_SIZE);
+
+  if(strcmp(arg, "") == 0){
+    write_socket(sock, "Missing argument\n");
+    return;
+  }
+  FILE* fp = fopen(arg, "r");
+  if(fp == NULL){
+    sprintf(buffer, "%s\n", strerror(errno));
+    write_socket(sock, buffer);
+    return;
+  }
+
+  SOCKET dtp_sock = init_server_connection(DTP_DEFAULT_PORT, 1);
+  int max = dtp_sock;
+  int client_sock, ret = 0;
+  
+  fd_set rdfs;
+  fd_set wdfs;
+  fd_set edfs;
+
+  FD_ZERO(&rdfs);
+  FD_ZERO(&edfs);
+  FD_ZERO(&wdfs);
+
+  FD_SET(dtp_sock, &rdfs);
+  FD_SET(dtp_sock, &wdfs);
+  FD_SET(dtp_sock, &edfs);
+
+  if((ret = select(max + 1, &rdfs, &wdfs, &edfs, /* timeout*/NULL)) < 0)
+    {
+     perror("select()");
+     exit(errno);
+    }
+
+    while(!FD_ISSET(dtp_sock, &rdfs)){
+      // infinite loop !
+    }
+
+    if(FD_ISSET(dtp_sock, &rdfs))
+    {
+      SOCKADDR_IN csin = { 0 };
+      client_sock = accept(dtp_sock, NULL,NULL);
+      if(client_sock == SOCKET_ERROR)
+      {
+          perror("accept()");
+          continue;
+      }
+
+      /* after connecting */
+
+      if(read_socket(client_sock, buffer) == -1)
+      {
+          /* disconnected */
+          continue;
+      }
+      /* wnew maximum fd ? */
+      max = client_sock > max ? client_sock : max;
+      FD_SET(client_sock, &rdfs);
+      continue;
+
+    //after connection treat actions
+    }
+    else
+    {
+
+     /* a client sends data */
+     if(FD_ISSET(client_sock, &rdfs))
+     {
+        int c = read_socket(client_sock, buffer);
+        if(c == 0)
+         {
+            printf("Client disconnected !\n");
+            closesocket(clients[i].sock);
+            continue;
+         }
+     }
+   }
+
+  write_socket(client_sock, "GET Ready\n");
+  fsupload(client_sock, fp);
+} // cmd_get
 
 int pi_svr_main(int argc, char *argv[]){
   
@@ -173,31 +233,43 @@ int pi_svr_main(int argc, char *argv[]){
   char buffer[BUF_SIZE];
   SOCKET sockServer = init_server_connection(PI_DEFAULT_PORT, MAX_CLIENT);
   int max = sockServer;
+  
   fd_set rdfs;
+  fd_set wdfs;
+  fd_set edfs;
+
   fflush(stdout);
 
+  FD_ZERO(&rdfs);
+  FD_ZERO(&edfs);
+  FD_ZERO(&wdfs);
+
+  FD_SET(sockServer, &rdfs);
+  FD_SET(sockServer, &wdfs);
+  FD_SET(sockServer, &edfs);
+
   while(1){
+
     int i =0;
     int ret = 0;
-    FD_ZERO(&rdfs);
-    FD_SET(sockServer, &rdfs);
-    //printf("on boucle\n" );
+ 
 
-    FD_SET(sockServer, &rdfs);
     /* add socket of each client */
-     for(i = 0; i < cpt_client; i++)
-     {
-        FD_SET(clients[i].sock, &rdfs);
-     }
+     // for(i = 0; i < cpt_client; i++)
+     // {
+     //    FD_SET(clients[i].sock, &rdfs);
+     // }
 
-    if((ret = select(max + 1, &rdfs, NULL, NULL, NULL)) < 0)
+    if((ret = select(max + 1, &rdfs, &wdfs, &edfs, /* timeout*/NULL)) < 0)
     {
      perror("select()");
      exit(errno);
     }
 
     // new client
-    if(FD_ISSET(sockServer, &rdfs)){
+    if(FD_ISSET(sockServer, &rdfs))
+    {
+
       printf("Welcome new user is online\n");
       fflush(stdout);
       SOCKADDR_IN csin = { 0 };
@@ -207,7 +279,9 @@ int pi_svr_main(int argc, char *argv[]){
           perror("accept()");
           continue;
       }
+
       /* after connecting */
+
       //TODO need authentification
       if(read_socket(client_sock, buffer) == -1)
       {
@@ -217,17 +291,21 @@ int pi_svr_main(int argc, char *argv[]){
       /* wnew maximum fd ? */
       max = client_sock > max ? client_sock : max;
 
-      FD_SET(client_sock, &rdfs);
+      
       Client c = { client_sock };
       strncpy(c.name, buffer, BUF_SIZE - 1);
       clients[cpt_client] = c;
+      FD_SET(clients[cpt_client].sock, &rdfs);
+      
       cpt_client++;
       //printf("on ajout le 1er client\n");
       fflush(stdout);
       continue;
 
     //after connection treat actions
-    }else{
+    }
+    else
+    {
       //printf("traitement en cours...\n");
       fflush(stdout);
       int i = 0;
@@ -238,6 +316,12 @@ int pi_svr_main(int argc, char *argv[]){
            {
               Client client = clients[i];
               int c = read_socket(clients[i].sock, buffer);
+              if(c == 0)
+               {
+                  printf("Client disconnected !\n");
+                  closesocket(clients[i].sock);
+                  continue;
+               }
               //printf("n : %s\n",buffer);
               char arg[BUF_SIZE];
               switch(parse_cmd(buffer,arg)){
@@ -273,13 +357,25 @@ int pi_svr_main(int argc, char *argv[]){
                           printf("CWD change directory %s\n",arg);
                           cmd_cwd(clients[i].sock, arg);
                           break;
+                case LS :
+                        printf("LS Print Directory %s\n",arg);
+                        cmd_ls(clients[i].sock, arg);
+                        break;
+                case PUT :   
+                        printf("PUT %s\n",arg);
+                        cmd_put(clients[i].sock, arg);
+                case GET :   
+                        printf("GET %s\n",arg);
+                        cmd_get(clients[i].sock, arg);
                 case INVALID :
-                          printf("Invalid cmd %s\n",arg);
-                          break;
+                        printf("Invalid cmd %s\n",arg);
+                        break;
               }
            }
         }
     }
-  };
+
+  }//while
+
   return 0;
 }// svr_main
