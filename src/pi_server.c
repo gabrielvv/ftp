@@ -26,8 +26,8 @@
 #endif /* WIN32 */
 
 #define MAX_CLIENT 10
-#define PI_DEFAULT_PORT 20
-#define DTP_DEFAULT_PORT 21
+#define PI_DEFAULT_PORT 21
+#define DTP_DEFAULT_PORT 20
 
 
 /*

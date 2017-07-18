@@ -41,8 +41,11 @@ void end(void)
 #endif
 }
 
-SOCKET man init_server_connection(const int port, int nb_client){
+SOCKET init_server_connection(const int port, int nb_client){
+  printf("init svr args: port = %d", port);
+
   // create a new socket
+
   SOCKET sock = socket(AF_INET, SOCK_STREAM, 0);
   SOCKADDR_IN sin = { 0 };
 
@@ -73,6 +76,9 @@ SOCKET man init_server_connection(const int port, int nb_client){
 
 SOCKET init_client_connection(const char *address, const int port)
 {
+
+  printf("init cli args: adress = %s, port= %d", address, port);
+
    // create a new socket
    SOCKET sock = socket(AF_INET, SOCK_STREAM, 0);
    SOCKADDR_IN sin = { 0 };
