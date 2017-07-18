@@ -3,17 +3,23 @@ set (DTP_SOURCES dtp_server.c dtp_client.c dtp_commons.c ftp_commons.c)
 set (FTP_SVR_SOURCES pi_svr_main.c)
 set (FTP_CLI_SOURCES pi_cli_main.c)
 
+#find_package(Threads REQUIRED)
+
 add_library (ftp_pi ${PI_SOURCES})
 add_library (ftp_dtp ${DTP_SOURCES})
 
 add_executable (ftp_svr ${FTP_SVR_SOURCES})
 add_executable (ftp_cli ${FTP_CLI_SOURCES})
 #add_dependencies (ftp_svr ftp_pi)
-target_link_libraries(ftp_svr ftp_pi ftp_dtp)
-target_link_libraries(ftp_cli ftp_pi ftp_dtp)
+target_link_libraries(ftp_svr ftp_pi ftp_dtp ${CMAKE_THREAD_LIBS_INIT})
+target_link_libraries(ftp_cli ftp_pi ftp_dtp ${CMAKE_THREAD_LIBS_INIT})
 
 #use C99
 set_property(TARGET ftp_pi ftp_dtp ftp_svr ftp_cli PROPERTY C_STANDARD 99)
+
+if(THREADS_HAVE_PTHREAD_ARG)
+	target_compile_options(ftp_svr PUBLIC "-lpthread")
+endif()
 
 # Enable a few warnings
 if(CMAKE_COMPILER_IS_GNUCC)

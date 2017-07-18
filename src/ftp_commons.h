@@ -16,6 +16,12 @@ typedef struct
    char name[BUF_SIZE];
 }Client;
 
+struct dtp_info
+{
+   SOCKET sock;
+   char *arg;
+};
+
 /**
 * windows support
 */

@@ -14,13 +14,14 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <string.h>
-#include <unistd.h> /* close */
+#include <unistd.h> /* close, getopt */
 #include <netdb.h> /* gethostbyname */
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
 #include <sys/stat.h>
 #include <dirent.h>
+#include <pthread.h>
 
 #endif /* WIN32 */
 
@@ -116,32 +117,48 @@ void cmd_ls(SOCKET sock, char *arg){
   }
 }
 
-void cmd_put(SOCKET sock, char *arg){
+/**
+*
+* To execute in a thread
+*
+*/
+void* cmd_put(void *arg){
+
+  struct dtp_info *dtpinfo = arg;
+
   char buffer[BUF_SIZE];
   memset(buffer, 0, BUF_SIZE);
 
-  if(strcmp(arg, "") == 0){
-    write_socket(sock, "Missing argument\n");
+  if(strcmp(dtpinfo->arg, "") == 0){
+    write_socket(dtpinfo->sock, "Missing argument\n");
     return;
   }
-  write_socket(sock, "PUT Ready\n");
+  write_socket(dtpinfo->sock, "PUT Ready\n");
   //SOCKET sockServer = init_server_cclient_socketonnection(DTP_DEFAULT_PORT, MAX_CLIENT);
-  fdownload(sock, arg);
+  fdownload(dtpinfo->sock, dtpinfo->arg);
 }// cmd_put
 
-void cmd_get(SOCKET sock, char *arg){
+/**
+*
+* To execute in a thread
+*
+*/
+void* cmd_get(void *arg){
+
+  struct dtp_info *dtpinfo = arg;
+
   char buffer[BUF_SIZE];
   memset(buffer, 0, BUF_SIZE);
 
-  if(strcmp(arg, "") == 0){
-    write_socket(sock, "Missing argument\n");
-    return;
+  if(strcmp(dtpinfo->arg, "") == 0){
+    write_socket(dtpinfo->sock, "Missing argument\n");
+    pthread_exit("data transfer failure");
   }
-  FILE* fp = fopen(arg, "r");
+  FILE* fp = fopen(dtpinfo->arg, "r");
   if(fp == NULL){
     sprintf(buffer, "%s\n", strerror(errno));
-    write_socket(sock, buffer);
-    return;
+    write_socket(dtpinfo->sock, buffer);
+    pthread_exit("data transfer failure");
   }
 
   SOCKET dtp_sock = init_server_connection(DTP_DEFAULT_PORT, 1);
@@ -177,7 +194,7 @@ void cmd_get(SOCKET sock, char *arg){
       if(client_sock == SOCKET_ERROR)
       {
           perror("accept()");
-          continue;
+          pthread_exit("data transfer failure");
       }
 
       /* after connecting */
@@ -185,12 +202,11 @@ void cmd_get(SOCKET sock, char *arg){
       if(read_socket(client_sock, buffer) == -1)
       {
           /* disconnected */
-          continue;
+          
       }
       /* wnew maximum fd ? */
       max = client_sock > max ? client_sock : max;
       FD_SET(client_sock, &rdfs);
-      continue;
 
     //after connection treat actions
     }
@@ -204,14 +220,14 @@ void cmd_get(SOCKET sock, char *arg){
         if(c == 0)
          {
             printf("Client disconnected !\n");
-            closesocket(clients[i].sock);
-            continue;
+            closesocket(client_sock);
          }
      }
    }
 
   write_socket(client_sock, "GET Ready\n");
   fsupload(client_sock, fp);
+  pthread_exit("data transfer success");
 } // cmd_get
 
 int pi_svr_main(int argc, char *argv[]){
@@ -224,7 +240,18 @@ int pi_svr_main(int argc, char *argv[]){
   printf("|_|    |_|  |_|     |___/|___||_|_\\  \\_/  |___||_|_\\\n");
   printf("\n");
   printf("\n");
-  printf("--help To see the different available commands\n");
+
+  int opt;
+  while ((opt = getopt(argc, argv, "h")) != -1) {
+       switch (opt) {
+       case 'h':
+           fprintf(stderr, "Available commands: pwd, rmd, mkd, put, get, ls, dele\n");
+       default:
+           fprintf(stderr, "Usage: %s [-h]\n",
+                   argv[0]);
+           exit(EXIT_FAILURE);
+       }
+  }
 
   //printf("Init server\n");
   init(); //init socket for windows;
@@ -233,6 +260,8 @@ int pi_svr_main(int argc, char *argv[]){
   char buffer[BUF_SIZE];
   SOCKET sockServer = init_server_connection(PI_DEFAULT_PORT, MAX_CLIENT);
   int max = sockServer;
+
+  pthread_t threadid;
   
   fd_set rdfs;
   fd_set wdfs;
@@ -363,10 +392,13 @@ int pi_svr_main(int argc, char *argv[]){
                         break;
                 case PUT :   
                         printf("PUT %s\n",arg);
-                        cmd_put(clients[i].sock, arg);
+                        struct dtp_info dtpinfo_put = {clients[i].sock, arg};
+                        pthread_create(&threadid, NULL, &cmd_put, &dtpinfo_put);
                 case GET :   
                         printf("GET %s\n",arg);
-                        cmd_get(clients[i].sock, arg);
+                        struct dtp_info dtpinfo_get = {clients[i].sock, arg};
+                        pthread_create(&threadid, NULL, &cmd_get, &dtpinfo_get);
+                        // cmd_get(clients[i].sock, arg);
                 case INVALID :
                         printf("Invalid cmd %s\n",arg);
                         break;

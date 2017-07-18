@@ -39,8 +39,8 @@ void cmd_dele(SOCKET sock, char *arg);
 void cmd_cwd(SOCKET sock, char *arg);
 
 void cmd_ls(SOCKET sock, char *arg);
-void cmd_put(SOCKET sock, char *arg);
-void cmd_get(SOCKET sock, char *arg);
+void* cmd_put(void *arg/*SOCKET sock, char *arg*/);
+void* cmd_get(void *arg/*SOCKET sock, char *arg*/);
 
 /**
 * @todo use getsockopt(), select() with efds and wdfds, shutdown()

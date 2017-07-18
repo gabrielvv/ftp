@@ -41,7 +41,7 @@ void end(void)
 #endif
 }
 
-SOCKET init_server_connection(const int port, int nb_client){
+SOCKET man init_server_connection(const int port, int nb_client){
   // create a new socket
   SOCKET sock = socket(AF_INET, SOCK_STREAM, 0);
   SOCKADDR_IN sin = { 0 };
